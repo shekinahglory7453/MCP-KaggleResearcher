@@ -1,7 +1,7 @@
 import os
 import io
 from typing import List, Dict, Optional
-
+import json
 import pandas as pd
 import kaggle
 import matplotlib
@@ -32,25 +32,21 @@ mcp = FastMCP("KaggleResearcher")
 # -------------------------------
 
 def get_drive_service() -> Resource:
-    """Handles Google OAuth2 authentication and returns the Drive service."""
-    creds: Optional[Credentials] = None
+    """Production-safe Google Drive authentication."""
+    token_json = os.environ.get("GOOGLE_TOKEN_JSON")
 
-    if os.path.exists("token.json"):
-        creds = Credentials.from_authorized_user_file("token.json", SCOPES)
+    if not token_json:
+        raise ValueError("GOOGLE_TOKEN_JSON environment variable not set.")
 
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                "credentials.json", SCOPES
-            )
-            creds = flow.run_local_server(port=0)
+    creds = Credentials.from_authorized_user_info(
+        eval(token_json), SCOPES
+    )
 
-        with open("token.json", "w") as token:
-            token.write(creds.to_json())
+    if creds.expired and creds.refresh_token:
+        creds.refresh(Request())
 
     return build("drive", "v3", credentials=creds)
+
 
 
 # -------------------------------
