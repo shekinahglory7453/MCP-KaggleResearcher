@@ -1,0 +1,16 @@
+# Secrets
+credentials.json
+token.json
+
+# Python environment & cache
+.venv/
+__pycache__/
+*.pyc
+
+# Data & Plots
+data/
+*.png
+*.csv
+
+# Local env files
+.env
